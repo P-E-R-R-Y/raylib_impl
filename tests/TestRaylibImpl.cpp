@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ModuleManager.hpp"
+#include "IModuleManager.hpp"
 #include "IGraphic2Module.hpp"
 #include "IGraphic3Module.hpp"
 #include "IAudioModule.hpp"
@@ -8,7 +8,7 @@
 #include <string>
 
 struct RaylibImplTest : ::testing::Test {
-    ModuleManager<IGraphic2Module, IGraphic3Module, IAudioModule> modules;
+    IModuleManager modules;
 };
 
 TEST_F(RaylibImplTest, LoadsAndExposesAllThreeContracts) {
@@ -133,3 +133,22 @@ TEST_F(RaylibImplTest, FullWalkthrough) {
     graphic->deleteWindow(window);
 }
 
+
+/**
+ * @brief La chaine accepts : un vendor 3D repond a une demande de 2D.
+ *
+ * raylib ne declare qu'un seul type, "graphic3". C'est IGraphic2Module::accepts
+ * qui le fait apparaitre quand on demande de la 2D - le module n'enumere pas
+ * les abstractions qu'il satisfait, l'interface declare ce qui la satisfait.
+ */
+TEST_F(RaylibImplTest, AGraphic3VendorAnswersAGraphic2Request) {
+    ASSERT_TRUE(modules.Load(RAYLIB_IMPL_PATH, "raylib"));
+
+    IGraphic2Module *asked2D = modules.Get<IGraphic2Module>("raylib");
+
+    ASSERT_NE(asked2D, nullptr);
+    EXPECT_STREQ(asked2D->type(), IGraphic3Module::contract);
+
+    EXPECT_EQ(modules.GetAllByType<IGraphic2Module>().size(), 1u);
+    EXPECT_EQ(modules.GetAllByType<IGraphic3Module>().size(), 1u);
+}
