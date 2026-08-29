@@ -42,6 +42,10 @@ class RayWindow : public graphic::IWindow3 {
         }
 
         ~RayWindow() {
+            /* Le curseur de raylib est GLOBAL au processus, pas attache a
+             * la fenetre : partir en le laissant cache priverait de pointeur
+             * la borne, et le bureau avec elle. */
+            raylib::ShowCursor();
             raylib::CloseWindow();
         }
 
@@ -74,6 +78,13 @@ class RayWindow : public graphic::IWindow3 {
 
         void setFrameLimit(int32_t limit) override {
             raylib::SetTargetFPS(limit);
+        }
+
+        void setMouseVisibility(bool visible) override {
+            if (visible)
+                raylib::ShowCursor();
+            else
+                raylib::HideCursor();
         }
 
         int32_t getDelta() override {
