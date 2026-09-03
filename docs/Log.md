@@ -1,22 +1,22 @@
-# raylib_impl — journal
+# raylib_impl — changelog
 
-Marqueurs : 🟢 ajout · 🔴 rupture · 🔵 correctif · ⚪ interne ou doc · 🟡 propose
-dans le plan, code non ecrit.
+Markers: 🟢 added · 🔴 breaking · 🔵 fix · ⚪ internal or docs · 🟡 proposed
+in the plan, no code written yet.
 
 ## v0.1.0
 
-- 🟢 remplit `graphic3` + `audio` (donc `graphic2` par la chaine `accepts`)
-- 🟢 point d'entree unique `getModules()`
-- 🟢 cibles SHARED et STATIC (la STATIC recompile `sources/raylib.cpp` pour
-  un consommateur qui n'en a pas besoin — constate, pas corrige)
+- 🟢 fills `graphic3` + `audio` (so `graphic2` via the `accepts` chain)
+- 🟢 single entry point `getModules()`
+- 🟢 SHARED and STATIC targets (STATIC recompiles `sources/raylib.cpp` for
+  a consumer that doesn't need it — known, not fixed)
 
-### Faille mesuree, pas corrigee
+### Measured failure, not fixed
 
-- 🔴 `createTexture`/`createSoundBuffer` etc. rendent un objet mort
-  (`isReady()==false`) au lieu de `nullptr` quand le chargement echoue.
-  `createSound` sur un objet mort segfault (SIGSEGV, exit 139)
+- 🔴 `createTexture`/`createSoundBuffer` etc. return a dead object
+  (`isReady()==false`) instead of `nullptr` when loading fails.
+  `createSound` on a dead object segfaults (SIGSEGV, exit 139)
 
-## Propose, pas ecrit
+## Proposed, not written
 
-- 🟡 `claims()` : `{"opengl"}` — sfml et raylib exclus sans se nommer
-- 🟡 cible STATIC → INTERFACE, zero object code
+- 🟡 `claims()`: `{"opengl"}` — sfml and raylib excluded without naming each other
+- 🟡 STATIC target → INTERFACE, zero object code
