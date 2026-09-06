@@ -47,8 +47,35 @@ public:
     const char *type() const override { return IGraphic3Module::contract; }
     const char *name() const override { return "raylib"; }
 
-    // window
-    // raylib ne sait pas ouvrir une deuxieme fenetre : nullptr.
+    /**
+     * @brief Revendique "opengl" : aucun autre vendor OpenGL en meme temps.
+     *
+     * raylib tient son contexte GL, sa fenetre et son etat d'entree dans des
+     * GLOBALES de sa propre bibliotheque - InitWindow() et CloseWindow()
+     * agissent sur un contexte unique, pas sur un objet qu'on lui passe.
+     * Deux vendors OpenGL charges ensemble se marchent donc dessus dans le
+     * driver, sans qu'aucune erreur ne remonte : au mieux un rendu qui
+     * disparait, au pire un plantage du process.
+     *
+     * C'est pour ca que le refus doit tomber a l'acquisition, avant que
+     * quoi que ce soit ne touche au contexte.
+     *
+     * @return const char *const*
+     */
+    const char *const *claims() const override {
+        static const char *claimed[] = { "opengl", nullptr };
+        return claimed;
+    }
+
+    /**
+     * @brief Ouvre LA fenetre. nullptr si une est deja ouverte.
+     *
+     * raylib n'en gere qu'une : InitWindow() ecrit dans une globale, un
+     * second appel ecraserait le contexte de la premiere. Le contrat prevoit
+     * ce refus, un jeu qui a besoin de sa propre fenetre ira voir ailleurs.
+     *
+     * @return graphic::IWindow3*
+     */
     graphic::IWindow3 *createWindow(int32_t screenWidth, int32_t screenHeight, std::string title) override {
         if (raylib::IsWindowReady())
             return nullptr;
@@ -65,8 +92,9 @@ public:
 
     graphic::IWindow2 *window() override { return _window; }
 
-    // input - the window is ignored : raylib is C, its input state is
-    // global and it only accepts one window anyway
+    /* La fenetre passee est IGNOREE : l'etat d'entree de raylib est global
+     * a la bibliotheque, pas attache a une fenetre. Comme il n'y en a de
+     * toute facon qu'une, le parametre n'a rien a designer. */
     graphic::IKeyboard *createKeyboard(graphic::IWindow *) override { return new RayKeyboard(); }
     void deleteKeyboard(graphic::IKeyboard *keyboard) override { delete keyboard; }
 
